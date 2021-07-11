@@ -6,125 +6,191 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.action_chains import ActionChains
 
-if len(sys.argv) < 3:
-	print("Pass credentials")
-	sys.exit(1)
-
-email = sys.argv[1]
-password = sys.argv[2]
 
 PATH = "C:\Program Files (x86)\chromedriver.exe"
-driver = webdriver.Chrome(PATH)
-driver.get("https://duolingo.com")
 
-option = Options()
-option.add_argument("--disable-infobars")
-option.add_argument("start-maximized")
-option.add_argument("--disable-extensions")
-option.add_experimental_option("prefs", {"profile.default_content_setting_values.notifications": 2})
-
-urls = ["https://www.duolingo.com/stories/de-en-der-pass?mode=read", "https://www.duolingo.com/stories/de-en-eddy-der-arzt?mode=read", "https://www.duolingo.com/stories/de-en-eine-neue-jacke?mode=read", "https://www.duolingo.com/stories/de-en-der-neue-schuler?mode=read", "https://www.duolingo.com/stories/de-en-juniors-frage?mode=read", "https://www.duolingo.com/stories/de-en-zum-bahnhof?mode=read", "https://www.duolingo.com/stories/de-en-der-vegetarier?mode=read", "https://www.duolingo.com/stories/de-en-urlaubskleidung?mode=read", "https://www.duolingo.com/stories/de-en-die-reservierung?mode=read", "https://www.duolingo.com/stories/de-en-kann-ich-helfen?mode=read"]
-
-try:
-    have_account = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, '//a[@data-test="have-account"]'))
-    )
-    have_account.click()
-
-    email_field = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.TAG_NAME, "input"))
-    )
-    email_field.send_keys(email)
-
-    password_field = driver.find_elements_by_css_selector("input")[1]
-    password_field.send_keys(password)
-
-    login = driver.find_elements_by_css_selector("button")[3]
-    login.click()
-
-    time.sleep(5)
-
-    it = -1
-
-    while True:
-	    it += 1
-	    if it > 99:
-	    	break
-
-	    driver.get(urls[it//10])
-	    
-	    time.sleep(4)
-
-	    start_story = driver.find_elements_by_css_selector("button")[0]
-	    start_story.click()
-	    
-	    time.sleep(2)
-
-	    while True:
-	    	try:
-	    		next = driver.find_element_by_xpath('//span[text()="Continue"]')
-	    		try:
-	    			next.click()
-	    		except WebDriverException:
-	    			pass
-	    	except WebDriverException:
-	    		break
-
-	    	try:
-		    	options = driver.find_elements_by_xpath('//span[@data-test="stories-phrase"]')
-		    	if len(options) > 0:
-		    		for option in options:
-		    			try:
-		    				option.click()
-		    				next.click()
-		    			except WebDriverException:
-		    				pass
-	    	except WebDriverException:
-	    		pass
-
-	    	try:		
-	    		options = driver.find_elements_by_xpath('//button[@data-test="stories-choice"]')
-	    		if len(options) > 0:
-		    		for option in options:
-		    			try:
-		    				option.click()
-		    				next.click()
-		    			except WebDriverException:
-		    				pass
-	    	except WebDriverException:
-	    		pass
-
-	    	try:		
-	    		options = driver.find_elements_by_xpath('//div[@data-test="stories-selectable-phrase"]')
-	    		if len(options) > 0:
-		    		for option in options:
-		    			try:
-		    				option.click()
-		    				next.click()
-		    			except WebDriverException:
-		    				pass
-	    	except WebDriverException:
-	    		pass
-
-	    	finals = driver.find_elements_by_css_selector("button._1hk_1._27o_2:not(._3alTu)")
-	    	if len(finals) > 0:
-
-	    		for i in range(len(finals)):
-	    			try:
-	    				finals[i].click()
-	    				next.click()
-	    			except WebDriverException:
-	    				pass
-
-	    			for j in range(len(finals)):
-	    				if i != j:
-			    			try:
-			    				finals[j].click()
-			    				next.click()
-			    			except WebDriverException:
-			    				pass
+def set_chrome_options(chrome_options):
+    # chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--log-level=3")
+    chrome_options.add_argument("--disable-infobars")
+    # chrome_options.add_argument("start-maximized")
+    chrome_options.add_argument("--disable-extensions")
+    chrome_options.add_argument("--incognito")
+    chrome_options.add_experimental_option("prefs", {"profile.default_content_setting_values.notifications": 2})
 
 
-finally:
+def exit(message=""):
+    if message == "":
+        message = "Oops! Something went wrong."
+
+    print(message)
     driver.quit()
+    sys.exit()
+
+
+def get_credentials():
+    try:
+        with open("credentials.txt") as f:
+            creds = f.readlines()
+
+        login = creds[0][len('login="') : -2]
+        password = creds[1][len('password="') : -1]
+    except:
+        return "", ""
+
+    return login, password
+
+
+def log_in(login, password):
+    if login != "" and password != "":
+        email_field = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, '//input[@data-test="email-input"]'))
+        )
+        email_field.send_keys(login)
+
+        password_field = driver.find_element_by_xpath('//input[@data-test="password-input"]')
+        password_field.send_keys(password)
+
+        login_button = driver.find_element_by_xpath('//button[@data-test="register-button"]')
+        login_button.click()
+
+    try:
+        wait = WebDriverWait(driver, 25)
+        wait.until(lambda driver: driver.current_url == "https://www.duolingo.com/learn")
+    except WebDriverException:
+        exit("Timed out. Please login to Duolingo in time.")
+
+
+def task_tokens(tokens):
+    done_list = []
+
+    for i in range(len(tokens)):
+        if i in done_list:
+            continue
+
+        for j in range(len(tokens)):
+            if j in done_list or i == j:
+                continue
+
+            tokens[i].click()
+            tokens[j].click()
+
+            #check if we found a pair
+            classes = tokens[i].get_attribute('class')
+            if '_3alTu' in classes:
+                done_list.append(i)
+                done_list.append(j)
+                break
+
+
+def task_options(options):
+    for option in options:
+        try:
+        	option.click()
+        except WebDriverException:
+            pass
+
+
+def complete_story():
+    start_story = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, '//button[@data-test="story-start"]'))
+    )
+    start_story.click()
+
+    task_list = ['//span[@data-test="stories-phrase"]', '//button[@data-test="stories-choice"]', '//div[@data-test="stories-selectable-phrase"]', '//button[@data-test="stories-token"]']
+    story_completed = False
+
+    while not story_completed:
+        #try to locate next button
+        try:
+            next = driver.find_element_by_xpath('//button[@data-test="stories-player-continue"]')
+        except WebDriverException:
+            break
+
+        # try to click next button
+        try:
+        	next.click()
+        except WebDriverException:
+            pass
+        
+        #try to do any task
+        for task in task_list:
+            options = driver.find_elements_by_xpath(task)
+            if len(options) == 0:
+                continue
+
+            if task == task_list[-1]:
+                task_tokens(options)
+                story_completed = True
+            else:
+                task_options(options)
+
+            next.click()
+            break
+    
+    #wait for completion to register
+    finish_story = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, '//button[@data-test="stories-player-done"]'))
+    )
+
+    #close story tab and switch to main tab
+    driver.close()
+    driver.switch_to.window(driver.window_handles[0])
+
+
+def stories_bot():
+    while True:
+        driver.get("https://www.duolingo.com/stories?referrer=web_tab")
+        stories = WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By.XPATH, '//div[@class="_2nLk_" and not(@class="_3N2Ph")]//div[@class="X4jDx" and not(text()="+0 XP")]'))
+        )
+
+        if len(stories) == 0:
+        	break
+
+        for story in stories:
+            if "+0 XP" in story.text:
+                continue
+
+            action = ActionChains(driver)
+            action.move_to_element(story).click().perform()
+
+            read_story = story.find_element_by_xpath('//a[@data-test="story-start-button"]')
+            story_url = read_story.get_attribute('href')
+
+            driver.execute_script("window.open('" + story_url + "', '_blank')")
+            driver.switch_to.window(driver.window_handles[1])
+
+            complete_story()
+
+
+def main():
+    login, password = get_credentials()
+
+    chrome_options = Options()
+    set_chrome_options(chrome_options)
+
+    global driver
+    driver = webdriver.Chrome(PATH, options=chrome_options)
+    driver.get("https://duolingo.com")
+
+    try:
+        have_account = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, '//a[@data-test="have-account"]'))
+        )
+        have_account.click()
+    except WebDriverException as e:
+        exit(e)
+
+    log_in(login, password)
+
+    stories_bot()
+    # learn_bot() todo
+
+    exit("Auto-lingo finished.")
+
+
+if __name__ == "__main__":
+    main()
