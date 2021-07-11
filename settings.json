@@ -1,0 +1,7 @@
+{
+    "chromedriver_path": "C:\\Program Files (x86)\\chromedriver.exe",
+
+    "antifarm_sleep": 0,
+
+    "thread_count": 1
+}
