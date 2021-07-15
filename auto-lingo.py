@@ -156,6 +156,23 @@ def challenge_speak_listen():
     skip.click()
 
 
+def challenge_judge():
+    sentence = driver.find_element_by_xpath('//div[@class="_3-JBe"]').text
+    sentence += " (j)"
+    if sentence in dictionary:
+        choices = driver.find_elements_by_xpath('//div[@data-test="challenge-judge-text"]')
+
+        for choice in choices:
+            if choice.text == dictionary[sentence]:
+                choice.click()
+    else:
+        skip = driver.find_element_by_xpath('//button[@data-test="player-skip"]')
+        skip.click()
+        solution = driver.find_element_by_xpath('//div[@class="_1UqAr _1sqiF"]')
+        dictionary[sentence] = solution.text
+        print(sentence, '-s->', dictionary[sentence])
+
+
 def challenge_form():
     sentence = driver.find_element_by_xpath('//div[@data-test="challenge-form-prompt"]').get_attribute('data-prompt')
     sentence += " (f)"
@@ -209,10 +226,17 @@ def challenge_reverse_translation():
 
         diff_length = len(solution) - len(input_text)
 
+        changed = False
+
         for i in range(len(input_text)):
             if input_text[i] != solution[i]:
                 solution = solution[i:i+diff_length]
+                changed = True
                 break
+
+        # if the answer is at the end of sentence
+        if not changed:
+            solution = solution[len(input_text):]
 
         dictionary[sentence] = solution
         print(sentence, '--->', dictionary[sentence])
@@ -226,9 +250,8 @@ def challenge_translate():
         if len(tap_tokens) > 0:
             # get solution without dot at the end
             # remove commas, dots, marks and change string to lowercase
-            solution = dictionary[sentence].replace(".", "").replace(",", "").replace("!", "").replace("?", "").lower()
+            solution = dictionary[sentence].replace(".", "").replace(",", "").replace("!", "").replace("?", "").replace("'", " '").lower()
             words = solution.split(" ")
-            print(solution, words)
 
             for word in words:
                 for tap_token in tap_tokens:
@@ -297,7 +320,15 @@ def complete_story():
     driver.switch_to.window(driver.window_handles[0])
 
 
-def complete_skill():
+def complete_skill(possible_skip_to_lesson=False):
+    if possible_skip_to_lesson:
+        time.sleep(2)
+        try:
+            skip_to_lesson = driver.find_element_by_xpath('//button[@class="_3o5OF _2q8ZQ t5wFJ yTpGk _2RTMn _3yAjN"]')
+            skip_to_lesson.click()
+        except WebDriverException:
+            pass
+
     # wait for site to initialize
     skip = WebDriverWait(driver, 100).until(
         EC.presence_of_element_located((By.XPATH, '//button[@data-test="player-skip"]'))
@@ -352,6 +383,13 @@ def complete_skill():
             try:
                 challenge = driver.find_element_by_xpath('//div[@data-test="challenge challenge-form"]')
                 challenge_form()
+                # break
+            except WebDriverException:
+                pass
+
+            try:
+                challenge = driver.find_element_by_xpath('//div[@data-test="challenge challenge-judge"]')
+                challenge_judge()
                 # break
             except WebDriverException:
                 pass
@@ -441,9 +479,7 @@ def learn_bot():
             try:
                 start_skill = skill.find_element_by_xpath('//button[@data-test="start-button"]')
                 start_skill.click()
-                print("before")
                 complete_skill()
-                print("after")
                 completed_skill = True
 
                 if settings['antifarm_sleep'] > 0:
@@ -460,6 +496,14 @@ def learn_bot():
 
             if 'fill="#e5e5e5"' not in g_tag.get_attribute('innerHTML'):
                 continue
+
+            # first check if there is a chance for "Welcome to x!" screen with skip to lesson button
+            possible_skip_to_lesson = False
+
+            try:
+                zero_level = skill.find_element_by_xpath('.//div[@data-test="level-crown"]')
+            except WebDriverException:
+                possible_skip_to_lesson = True
 
             time.sleep(0.5)
             # before doing anything with skills, perform a blank click for possible notifications to disappear
@@ -484,9 +528,7 @@ def learn_bot():
             action = ActionChains(driver)
             action.move_to_element(start_skill).click().perform()
 
-            print("before")
-            complete_skill()
-            print("after")
+            complete_skill(possible_skip_to_lesson)
 
             completed_skill = True
 
