@@ -133,6 +133,24 @@ def task_options(options):
             pass
 
 
+def challenge_select():
+    sentence = driver.find_element_by_xpath('//h1[@data-test="challenge-header"]').text
+    sentence += " (s)"
+    if sentence in dictionary:
+        choices = driver.find_elements_by_xpath('//span[@class="HaQTI"]')
+
+        for choice in choices:
+            if choice.text == dictionary[sentence]:
+                choice.click()
+
+    else:
+        skip = driver.find_element_by_xpath('//button[@data-test="player-skip"]')
+        skip.click()
+        solution = driver.find_element_by_xpath('//div[@class="_1UqAr _1sqiF"]').text
+        dictionary[sentence] = solution
+        print(sentence, '-o->', dictionary[sentence])
+
+
 def challenge_speak_listen():
     skip = driver.find_element_by_xpath('//button[@data-test="player-skip"]')
     skip.click()
@@ -140,6 +158,7 @@ def challenge_speak_listen():
 
 def challenge_form():
     sentence = driver.find_element_by_xpath('//div[@data-test="challenge-form-prompt"]').get_attribute('data-prompt')
+    sentence += " (f)"
     if sentence in dictionary:
         choices = driver.find_elements_by_xpath('//div[@data-test="challenge-judge-text"]')
 
@@ -156,7 +175,7 @@ def challenge_form():
 
 def challenge_name():
     sentence = driver.find_element_by_xpath('//h1[@data-test="challenge-header"]').text
-    print(sentence)
+    sentence += " (n)"
     if sentence in dictionary:
         input_field = driver.find_element_by_xpath('//input[@data-test="challenge-text-input"]')
         input_field.send_keys(dictionary[sentence])
@@ -173,6 +192,7 @@ def challenge_name():
 
 def challenge_reverse_translation():
     sentence = driver.find_element_by_xpath('//span[@data-test="hint-sentence"]').text
+    sentence += " (r)"
     if sentence in dictionary:
         input_field = driver.find_element_by_xpath('//input[@data-test="challenge-text-input"]')
         input_field.send_keys(dictionary[sentence])
@@ -181,25 +201,38 @@ def challenge_reverse_translation():
     else:
         skip = driver.find_element_by_xpath('//button[@data-test="player-skip"]')
         skip.click()
-        solution = driver.find_element_by_xpath('//span[@class="_3gI0Y"]').text
+        time.sleep(0.2)
+        solution = driver.find_element_by_xpath('//div[@class="_1UqAr _1sqiF"]').text
+
+        input_text = driver.find_element_by_xpath('//label[@class="_3f_Q3 _2FKqf _2ti2i sXpqy"]').text
+        input_text = input_text.replace("\n", "")
+
+        diff_length = len(solution) - len(input_text)
+
+        for i in range(len(input_text)):
+            if input_text[i] != solution[i]:
+                solution = solution[i:i+diff_length]
+                break
+
         dictionary[sentence] = solution
         print(sentence, '--->', dictionary[sentence])
 
 
 def challenge_translate():
     sentence = driver.find_element_by_xpath('//span[@data-test="hint-sentence"]').text
+    sentence += " (t)"
     if sentence in dictionary:
         tap_tokens = driver.find_elements_by_xpath('//button[@data-test="challenge-tap-token"]')
         if len(tap_tokens) > 0:
             # get solution without dot at the end
-            solution = dictionary[sentence][:-1]
-            # remove commas and change string to lowercase
-            solution = solution.replace(",", " ").lower()
+            # remove commas, dots, marks and change string to lowercase
+            solution = dictionary[sentence].replace(".", "").replace(",", "").replace("!", "").replace("?", "").lower()
             words = solution.split(" ")
+            print(solution, words)
 
             for word in words:
                 for tap_token in tap_tokens:
-                    if "disabled" in tap_token.get_attribute('innerHTML'):
+                    if tap_token.get_attribute("disabled") != None:
                         continue
                     if tap_token.text.lower() == word:
                         tap_token.click()
@@ -218,7 +251,7 @@ def challenge_translate():
 
 
 def complete_story():
-    start_story = WebDriverWait(driver, 10).until(
+    start_story = WebDriverWait(driver, 100).until(
         EC.presence_of_element_located((By.XPATH, '//button[@data-test="story-start"]'))
     )
     start_story.click()
@@ -255,7 +288,7 @@ def complete_story():
             break
     
     # wait for completion to register
-    finish_story = WebDriverWait(driver, 10).until(
+    finish_story = WebDriverWait(driver, 100).until(
         EC.presence_of_element_located((By.XPATH, '//button[@data-test="stories-player-done"]'))
     )
 
@@ -266,7 +299,7 @@ def complete_story():
 
 def complete_skill():
     # wait for site to initialize
-    skip = WebDriverWait(driver, 10).until(
+    skip = WebDriverWait(driver, 100).until(
         EC.presence_of_element_located((By.XPATH, '//button[@data-test="player-skip"]'))
     )
 
@@ -274,6 +307,13 @@ def complete_skill():
 
     while not skill_completed:
         while True:
+            try:
+                carousel = driver.find_element_by_xpath('//div[@data-test="player-end-carousel"]')
+                skill_completed = True
+                break
+            except WebDriverException:
+                pass
+            
             try:
                 no_thanks = driver.find_element_by_xpath('//button[@data-test="no-thanks-to-plus"]')
                 skill_completed = True
@@ -284,49 +324,63 @@ def complete_skill():
             try:
                 challenge = driver.find_element_by_xpath('//div[@data-test="challenge challenge-speak"]')
                 challenge_speak_listen()
-                break
+                # break
             except WebDriverException:
                 pass
 
             try:
                 challenge = driver.find_element_by_xpath('//div[@data-test="challenge challenge-listen"]')
                 challenge_speak_listen()
-                break
+                # break
             except WebDriverException:
                 pass
 
             try:
                 challenge = driver.find_element_by_xpath('//div[@data-test="challenge challenge-listenTap"]')
                 challenge_speak_listen()
-                break
+                # break
+            except WebDriverException:
+                pass
+
+            try:
+                challenge = driver.find_element_by_xpath('//div[@data-test="challenge challenge-selectTranscription"]')
+                challenge_speak_listen()
+                # break
             except WebDriverException:
                 pass
 
             try:
                 challenge = driver.find_element_by_xpath('//div[@data-test="challenge challenge-form"]')
                 challenge_form()
-                break
+                # break
             except WebDriverException:
                 pass
 
             try:
                 challenge = driver.find_element_by_xpath('//div[@data-test="challenge challenge-translate"]')
                 challenge_translate()
-                break
+                # break
             except WebDriverException:
                 pass
                 
             try:
                 challenge = driver.find_element_by_xpath('//div[@data-test="challenge challenge-completeReverseTranslation"]')
                 challenge_reverse_translation()
-                break
+                # break
             except WebDriverException:
                 pass
 
             try:
                 challenge = driver.find_element_by_xpath('//div[@data-test="challenge challenge-name"]')
                 challenge_name()
-                break
+                # break
+            except WebDriverException:
+                pass
+
+            try:
+                challenge = driver.find_element_by_xpath('//div[@data-test="challenge challenge-select"]')
+                challenge_select()
+                # break
             except WebDriverException:
                 pass
 
@@ -337,20 +391,13 @@ def complete_skill():
             except WebDriverException:
                 pass
 
-        time.sleep(0.4)
-
-        # click continue
-        try:
-            next = driver.find_element_by_xpath('//button[@data-test="player-next"]')
-            next.click()
-        except WebDriverException:
-            pass
+        time.sleep(1)
 
 
 def stories_bot():
     while True:
         driver.get("https://www.duolingo.com/stories?referrer=web_tab")
-        stories = WebDriverWait(driver, 10).until(
+        stories = WebDriverWait(driver, 100).until(
             EC.presence_of_all_elements_located((By.XPATH, '//div[@class="_2nLk_" and not(@class="_3N2Ph")]//div[@class="X4jDx" and not(text()="+0 XP")]'))
         )
 
@@ -382,13 +429,31 @@ def learn_bot():
 
     while True:
         driver.get("https://www.duolingo.com/learn")
-        skills = WebDriverWait(driver, 10).until(
+        skills = WebDriverWait(driver, 100).until(
             EC.presence_of_all_elements_located((By.XPATH, '//div[@data-test="skill"]'))
         )
+
+        time.sleep(2)
 
         completed_skill = False
 
         for skill in skills:
+            try:
+                start_skill = skill.find_element_by_xpath('//button[@data-test="start-button"]')
+                start_skill.click()
+                print("before")
+                complete_skill()
+                print("after")
+                completed_skill = True
+
+                if settings['antifarm_sleep'] > 0:
+                    time.sleep(settings['antifarm_sleep'])
+
+                break
+
+            except WebDriverException:
+                pass
+
             # search for g tag with grey circle fill
             # cannot search for skills with level < 5 because some skills cap at level 1
             g_tag = skill.find_element_by_tag_name('g')
@@ -396,14 +461,17 @@ def learn_bot():
             if 'fill="#e5e5e5"' not in g_tag.get_attribute('innerHTML'):
                 continue
 
+            time.sleep(0.5)
             # before doing anything with skills, perform a blank click for possible notifications to disappear
             blank_item = driver.find_element_by_xpath('//div[@class="_2fX2D"]')
-            blank_item.click()
+            action = ActionChains(driver)
+            action.move_to_element(blank_item).click().perform()
+
+            time.sleep(0.5)
 
             # navigate to chosen skill
             action = ActionChains(driver)
             action.move_to_element(skill).perform()
-
             time.sleep(0.5)
 
             skill.click()
@@ -416,7 +484,9 @@ def learn_bot():
             action = ActionChains(driver)
             action.move_to_element(start_skill).click().perform()
 
+            print("before")
             complete_skill()
+            print("after")
 
             completed_skill = True
 
