@@ -203,6 +203,11 @@ def challenge_name():
         skip.click()
         time.sleep(0.2)
         solution = driver.find_element_by_xpath('//div[@class="_1UqAr _1sqiF"]').text
+
+        correct_solution_solutions = driver.find_element_by_xpath('//h2[@class="_1x6Dk _1sqiF"]').text
+        if "solutions" in correct_solution_solutions:
+            solution = solution.split(",")[0]
+
         dictionary[sentence] = solution
         print(sentence, '-+->', dictionary[sentence])
 
@@ -243,6 +248,13 @@ def challenge_reverse_translation():
 
 
 def challenge_translate():
+    # static variable for choosing method of splitting tap tokens with apostrophe sign
+    if "apostrophe_counter" not in challenge_translate.__dict__:
+        challenge_translate.apostrophe_counter = 0
+    # static variable for choosing method of splitting tap tokens with dash sign
+    if "dash_counter" not in challenge_translate.__dict__:
+        challenge_translate.dash_counter = 0
+
     sentence = driver.find_element_by_xpath('//span[@data-test="hint-sentence"]').text
     sentence += " (t)"
     if sentence in dictionary:
@@ -250,7 +262,17 @@ def challenge_translate():
         if len(tap_tokens) > 0:
             # get solution without dot at the end
             # remove commas, dots, marks and change string to lowercase
-            solution = dictionary[sentence].replace(".", "").replace(",", "").replace("!", "").replace("?", "").replace("'", " '").lower()
+            solution = dictionary[sentence].replace(".", "").replace(",", "").replace("!", "").replace("?", "").lower()
+
+            if challenge_translate.apostrophe_counter % 2 == 0:
+                solution = solution.replace("'", " '")
+
+            if challenge_translate.dash_counter < 2:
+                solution = solution.replace("-", " ")
+
+            challenge_translate.apostrophe_counter += (challenge_translate.apostrophe_counter + 1) % 2
+            challenge_translate.dash_counter += (challenge_translate.dash_counter + 1) % 4
+
             words = solution.split(" ")
 
             for word in words:
@@ -330,20 +352,23 @@ def complete_skill(possible_skip_to_lesson=False):
             pass
 
     # wait for site to initialize
-    skip = WebDriverWait(driver, 100).until(
-        EC.presence_of_element_located((By.XPATH, '//button[@data-test="player-skip"]'))
-    )
+    try:
+        skip = WebDriverWait(driver, 100).until(
+            EC.presence_of_element_located((By.XPATH, '//button[@data-test="player-skip"]'))
+        )
+    except WebDriverException:
+        pass
 
     skill_completed = False
 
     while not skill_completed:
         while True:
-            try:
-                carousel = driver.find_element_by_xpath('//div[@data-test="player-end-carousel"]')
-                skill_completed = True
-                break
-            except WebDriverException:
-                pass
+            # try:
+            #     carousel = driver.find_element_by_xpath('//div[@data-test="player-end-carousel"]')
+            #     skill_completed = True
+            #     break
+            # except WebDriverException:
+            #     pass
             
             try:
                 no_thanks = driver.find_element_by_xpath('//button[@data-test="no-thanks-to-plus"]')
@@ -425,6 +450,13 @@ def complete_skill(possible_skip_to_lesson=False):
             try:
                 next = driver.find_element_by_xpath('//button[@data-test="player-next"]')
                 next.click()
+                break
+            except WebDriverException:
+                pass
+
+            try:
+                blank_item = driver.find_element_by_xpath('//div[@class="_2fX2D"]')
+                skill_completed = True
                 break
             except WebDriverException:
                 pass
