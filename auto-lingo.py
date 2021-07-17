@@ -67,6 +67,7 @@ def parse_arguments():
     parser.add_argument("-l", "--learn", help="learn mode", action="store_true")
     parser.add_argument("-i", "--incognito", help="incognito browser mode", action="store_true")
     parser.add_argument("-m", "--mute", help="mute browser audio", action="store_true")
+    # parser.add_argument("-a", "--autologin", help="login to duolingo automatically", action="store_true")
 
     args = parser.parse_args()
 
@@ -302,40 +303,44 @@ def complete_story():
     start_story.click()
 
     task_list = ['//span[@data-test="stories-phrase"]', '//button[@data-test="stories-choice"]', '//div[@data-test="stories-selectable-phrase"]', '//button[@data-test="stories-token"]']
-    story_completed = False
+    done_tokens = False
 
-    while not story_completed:
-        # try to locate next button
-        try:
-            next = driver.find_element_by_xpath('//button[@data-test="stories-player-continue"]')
-        except WebDriverException:
-            break
-
+    while True:
         # try to click next button
         try:
+            next = driver.find_element_by_xpath('//button[@data-test="stories-player-continue"]')
             next.click()
         except WebDriverException:
             pass
-        
-        # try to do any task
-        for task in task_list:
-            options = driver.find_elements_by_xpath(task)
-            if len(options) == 0:
-                continue
 
-            if task == task_list[-1]:
-                task_tokens(options)
-                story_completed = True
-            else:
-                task_options(options)
-
-            next.click()
+        try:
+            story_done = driver.find_element_by_xpath('//button[@data-test="stories-player-done"]')
             break
-    
-    # wait for completion to register
-    finish_story = WebDriverWait(driver, 100).until(
-        EC.presence_of_element_located((By.XPATH, '//button[@data-test="stories-player-done"]'))
-    )
+        except WebDriverException:
+            pass    
+
+        # try:
+        #     blank_item = driver.find_element_by_xpath('//div[@class="_2fX2D"]')
+        #     break
+        # except WebDriverException:
+        #     pass
+
+        if not done_tokens:
+            # try to do any task
+            for task in task_list:
+                options = driver.find_elements_by_xpath(task)
+                # if did not find that task
+                if len(options) == 0:
+                    continue
+
+                if task == task_list[-1]:
+                    task_tokens(options)
+                    done_tokens = True
+                else:
+                    task_options(options)
+
+                # next.click()
+                break
 
     # close story tab and switch to main tab
     driver.close()
@@ -362,14 +367,7 @@ def complete_skill(possible_skip_to_lesson=False):
     skill_completed = False
 
     while not skill_completed:
-        while True:
-            # try:
-            #     carousel = driver.find_element_by_xpath('//div[@data-test="player-end-carousel"]')
-            #     skill_completed = True
-            #     break
-            # except WebDriverException:
-            #     pass
-            
+        while True:    
             try:
                 no_thanks = driver.find_element_by_xpath('//button[@data-test="no-thanks-to-plus"]')
                 skill_completed = True

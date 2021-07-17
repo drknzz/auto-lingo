@@ -3,8 +3,6 @@
 
     "antifarm_sleep": 0,
 
-    "thread_count": 1,
-
     "maximize_window": true,
 
     "headless": false,
