@@ -297,7 +297,7 @@ def challenge_translate():
 
 
 def complete_story():
-    start_story = WebDriverWait(driver, 100).until(
+    start_story = WebDriverWait(driver, 20).until(
         EC.presence_of_element_located((By.XPATH, '//button[@data-test="story-start"]'))
     )
     start_story.click()
@@ -319,11 +319,11 @@ def complete_story():
         except WebDriverException:
             pass    
 
-        # try:
-        #     blank_item = driver.find_element_by_xpath('//div[@class="_2fX2D"]')
-        #     break
-        # except WebDriverException:
-        #     pass
+        try:
+            blank_item = driver.find_element_by_xpath('//div[@class="_2fX2D"]')
+            break
+        except WebDriverException:
+            pass
 
         if not done_tokens:
             # try to do any task
@@ -358,7 +358,7 @@ def complete_skill(possible_skip_to_lesson=False):
 
     # wait for site to initialize
     try:
-        skip = WebDriverWait(driver, 100).until(
+        skip = WebDriverWait(driver, 20).until(
             EC.presence_of_element_located((By.XPATH, '//button[@data-test="player-skip"]'))
         )
     except WebDriverException:
@@ -465,7 +465,7 @@ def complete_skill(possible_skip_to_lesson=False):
 def stories_bot():
     while True:
         driver.get("https://www.duolingo.com/stories?referrer=web_tab")
-        stories = WebDriverWait(driver, 100).until(
+        stories = WebDriverWait(driver, 20).until(
             EC.presence_of_all_elements_located((By.XPATH, '//div[@class="_2nLk_" and not(@class="_3N2Ph")]//div[@class="X4jDx" and not(text()="+0 XP")]'))
         )
 
@@ -497,7 +497,7 @@ def learn_bot():
 
     while True:
         driver.get("https://www.duolingo.com/learn")
-        skills = WebDriverWait(driver, 100).until(
+        skills = WebDriverWait(driver, 20).until(
             EC.presence_of_all_elements_located((By.XPATH, '//div[@data-test="skill"]'))
         )
 
