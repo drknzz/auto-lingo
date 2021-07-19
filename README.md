@@ -26,12 +26,17 @@ Completes every available story as long as it gives XP.
 <!-- To get a local copy up and running follow these simple steps. -->
 
 ### Prerequisites
+You will need [Python](https://www.python.org/), [Selenium](https://www.selenium.dev/), [Chrome](https://www.google.com/intl/en_en/chrome/) and [Chromedriver](https://chromedriver.chromium.org/downloads) installed.
 
-<!-- This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ``` -->
+### Installing Selenium
+   ```sh
+   $ pip install selenium
+   ```
+   
+### Installing Chromedriver
+1. Check your version of [Chrome](https://www.google.com/intl/en_en/chrome/) by going [here](https://www.google.com/chrome/update/) and following the 3 steps in "How to check your version of Chrome".
+2. Go [here](https://chromedriver.chromium.org/downloads) and download the right version of chromedriver.
+3. Place the downloaded chromedriver executable in default path given in [settings.json](https://github.com/drknzz/auto-lingo/blob/main/settings.json) under "chromedriver_path" <br>OR<br>change the path in [settings.json](https://github.com/drknzz/auto-lingo/blob/main/settings.json) to point to the chromedriver executable.
 
 ### Installation
 
@@ -72,9 +77,11 @@ Settings are located in [settings.json](https://github.com/drknzz/auto-lingo/blo
 * `incognito` &emsp;&emsp;&emsp;&emsp;&thinsp;&thinsp;&thinsp;&thinsp; - Start browser in incognito mode
 * `auto_login` &emsp;&emsp;&emsp;&emsp;&thinsp;&thinsp; - Automatically login to Duolingo using data in [credentials.json](https://github.com/drknzz/auto-lingo/blob/main/credentials.json)
 * `mute_audio` &emsp;&emsp;&emsp;&emsp;&thinsp;&thinsp; - Start browser with muted audio
-  
+
+## Acknowledgments
+Huge thanks to [Kubvv](https://github.com/Kubvv) for countless tests which led to bug and corner case finds.
 
 <!-- LICENSE -->
 ## License
 
-Distributed under the [MIT License](https://github.com/drknzz/auto-lingo/blob/main/LICENSE).
+[Auto-lingo](#auto-lingo) is distributed under the [MIT License](https://github.com/drknzz/auto-lingo/blob/main/LICENSE).
