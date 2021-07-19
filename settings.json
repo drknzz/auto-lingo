@@ -9,7 +9,7 @@
 
     "incognito": true,
 
-    "auto_login": true,
+    "auto_login": false,
 
     "mute_audio": true
 

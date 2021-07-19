@@ -67,7 +67,7 @@ def parse_arguments():
     parser.add_argument("-l", "--learn", help="learn mode", action="store_true")
     parser.add_argument("-i", "--incognito", help="incognito browser mode", action="store_true")
     parser.add_argument("-m", "--mute", help="mute browser audio", action="store_true")
-    # parser.add_argument("-a", "--autologin", help="login to duolingo automatically", action="store_true")
+    parser.add_argument("-a", "--autologin", help="login to duolingo automatically", action="store_true")
 
     args = parser.parse_args()
 
@@ -76,6 +76,9 @@ def parse_arguments():
 
     if args.mute:
         settings['mute_audio'] = True
+
+    if args.autologin:
+        settings['auto_login'] = True
 
     # set default mode to stories
     if not args.learn and not args.stories:
@@ -271,8 +274,8 @@ def challenge_translate():
             if challenge_translate.dash_counter < 2:
                 solution = solution.replace("-", " ")
 
-            challenge_translate.apostrophe_counter += (challenge_translate.apostrophe_counter + 1) % 2
-            challenge_translate.dash_counter += (challenge_translate.dash_counter + 1) % 4
+            challenge_translate.apostrophe_counter = (challenge_translate.apostrophe_counter + 1) % 2
+            challenge_translate.dash_counter = (challenge_translate.dash_counter + 1) % 4
 
             words = solution.split(" ")
 
@@ -466,7 +469,7 @@ def stories_bot():
     while True:
         driver.get("https://www.duolingo.com/stories?referrer=web_tab")
         stories = WebDriverWait(driver, 20).until(
-            EC.presence_of_all_elements_located((By.XPATH, '//div[@class="_2nLk_" and not(@class="_3N2Ph")]//div[@class="X4jDx" and not(text()="+0 XP")]'))
+            EC.presence_of_all_elements_located((By.XPATH, '//div[@class="_2nLk_" and not(@class="_3N2Ph")]//div[@class="X4jDx"]'))
         )
 
         if len(stories) == 0:
@@ -476,10 +479,10 @@ def stories_bot():
             if "+0 XP" in story.text:
                 continue
 
-            action = ActionChains(driver)
-            action.move_to_element(story).click().perform()
+            driver.execute_script("arguments[0].scrollIntoView();", story)
+            story.click()
 
-            read_story = story.find_element_by_xpath('//a[@data-test="story-start-button"]')
+            read_story = story.find_element_by_xpath('.//a[@data-test="story-start-button"]')
             story_url = read_story.get_attribute('href')
 
             driver.execute_script("window.open('" + story_url + "', '_blank')")
