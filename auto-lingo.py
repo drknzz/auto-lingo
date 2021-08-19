@@ -106,6 +106,9 @@ def log_in(login, password):
     except WebDriverException:
         exit("Timed out. Please login to Duolingo in time.")
 
+#this function is dedicated to all imbecils who put "Correct solution:" inside the solution itself
+def anti_imbecil_check(solution):
+    return len(solution) > 17 and solution[0:17] == "Correct solution:"
 
 def task_tokens(tokens):
     done_list = []
@@ -229,6 +232,9 @@ def challenge_reverse_translation():
         skip.click()
         time.sleep(0.2)
         solution = driver.find_element_by_xpath('//div[@class="_1UqAr _1sqiF"]').text
+        
+        if (anti_imbecil_check(solution)):
+            solution = solution[17:]
 
         input_text = driver.find_element_by_xpath('//label[@class="_3f_Q3 _2FKqf _2ti2i sXpqy"]').text
         input_text = input_text.replace("\n", "")
@@ -296,6 +302,7 @@ def challenge_translate():
         skip = driver.find_element_by_xpath('//button[@data-test="player-skip"]')
         skip.click()
         solution = driver.find_element_by_xpath('//div[@class="_1UqAr _1sqiF"]').text
+        solution = solution.replace(";", "").replace("¿", "").replace("¡", "")
         dictionary[sentence] = solution
         # print(sentence, '--->', dictionary[sentence])
 
@@ -341,6 +348,62 @@ def challenge_tap_complete():
 
         dictionary[sentence] = solution
         # print(sentence, '-q->', dictionary[sentence])
+
+
+def challenge_tap():
+    sentence = driver.find_element_by_xpath('//div[@class="_3NgMa _2Hg6H"]').text
+    sentence += " (ta)"
+    if sentence in dictionary:
+        choices = driver.find_elements_by_xpath('//div[@class="_1yW4j _2LmyT"]')
+        words = dictionary[sentence].split()
+        for word in words:
+            for choice in choices:
+                if choice.text == word:
+                    choice.click()
+    else:
+        skip = driver.find_element_by_xpath('//button[@data-test="player-skip"]')
+        skip.click()
+        solution = driver.find_element_by_xpath('//div[@class="_1UqAr _1sqiF"]').text
+        solution = solution.replace(".", "").replace("?", "").replace("!", "").replace(";", "").replace(",", "").replace("¿", "")
+        dictionary[sentence] = solution
+        # print(sentence, '-ta->', dictionary[sentence])
+
+
+def challenge_dialogue_readcomp(isDial):
+    if isDial:
+        sentence = driver.find_element_by_xpath('//div[@class="_1eXoV _3ZoSe"]').text
+        sentence += " (d)"
+    else:
+        sentence = driver.find_element_by_xpath('//div[@class="_1iPXH _2Hg6H"]').text
+        sentence += " (rc)"
+    if sentence in dictionary:
+        choices = driver.find_elements_by_xpath('//div[@data-test="challenge-judge-text"]')
+        for choice in choices:
+            if choice.text == dictionary[sentence]:
+                choice.click()
+    else:
+        skip = driver.find_element_by_xpath('//button[@data-test="player-skip"]')
+        skip.click()
+        solution = driver.find_element_by_xpath('//div[@class="_1UqAr _1sqiF"]')
+        dictionary[sentence] = solution.text
+        # print(sentence, '-d->', dictionary[sentence])
+
+
+def challenge_gap():
+    sentence = driver.find_element_by_xpath('//div[@class="_3Fi4A _2Hg6H"]').text
+    sentence += " (fg)"
+    if sentence in dictionary:
+        choices = driver.find_elements_by_xpath('//div[@data-test="challenge-judge-text"]')
+        for choice in choices:
+            if choice.text == dictionary[sentence]:
+                choice.click()
+    else:
+        skip = driver.find_element_by_xpath('//button[@data-test="player-skip"]')
+        skip.click()
+        solution = driver.find_element_by_xpath('//div[@class="_1UqAr _1sqiF"]')
+        dictionary[sentence] = solution.text
+        # print(sentence, '-fg->', dictionary[sentence])
+
 
 def complete_story():
     start_story = WebDriverWait(driver, 20).until(
@@ -482,7 +545,35 @@ def complete_skill(possible_skip_to_lesson=False):
 
             try:
                 challenge = driver.find_element_by_xpath('//div[@data-test="challenge challenge-tapComplete"]')
-                challenge_tap_complete()
+                challenge_tap()
+            except WebDriverException:
+                pass
+
+            try:
+                challenge = driver.find_element_by_xpath('//div[@data-test="challenge challenge-dialogue"]')
+                challenge_dialogue_readcomp(True)
+                # break
+            except WebDriverException:
+                pass
+
+            try:
+                challenge = driver.find_element_by_xpath('//div[@data-test="challenge challenge-listenComprehension"]')
+                challenge_speak_listen()
+                # break
+            except WebDriverException:
+                pass
+                
+            try:
+                challenge = driver.find_element_by_xpath('//div[@data-test="challenge challenge-readComprehension"]')
+                challenge_dialogue_readcomp(False)
+                # break
+            except WebDriverException:
+                pass
+
+            try:
+                challenge = driver.find_element_by_xpath('//div[@data-test="challenge challenge-gapFill"]')
+                challenge_gap()
+                #break
             except WebDriverException:
                 pass
 
