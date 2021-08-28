@@ -638,7 +638,7 @@ def learn_bot():
 
         for skill in skills:
             try:
-                start_skill = skill.find_element_by_xpath('//button[@data-test="start-button"]')
+                start_skill = skill.find_element_by_xpath('//a[@data-test="start-button"]')
                 start_skill.click()
                 complete_skill()
                 completed_skill = True
@@ -683,8 +683,14 @@ def learn_bot():
             skill.click()
 
             time.sleep(0.5)
-
-            start_skill = skill.find_element_by_xpath('//button[@data-test="start-button"]')
+            
+            found = True
+            try:
+                start_skill = skill.find_element_by_xpath('//a[@data-test="start-button"]')
+            except WebDriverException:
+                found = False
+            if not found:
+                start_skill = skill.find_element_by_xpath('//button[@data-test="start-button"]')
 
             action = ActionChains(driver)
             action.move_to_element(start_skill).click().perform()
