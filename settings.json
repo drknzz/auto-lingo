@@ -1,7 +1,9 @@
 {
     "chromedriver_path": "C:\\Program Files (x86)\\chromedriver.exe",
 
-    "antifarm_sleep": 0,
+    "antifarm_sleep": 10,
+
+    "deviation": 0,
 
     "maximize_window": true,
 
@@ -12,5 +14,4 @@
     "auto_login": false,
 
     "mute_audio": true
-
 }
