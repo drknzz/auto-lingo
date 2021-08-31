@@ -3,6 +3,8 @@
 
     "antifarm_sleep": 0,
 
+    "deviation": 0,
+
     "maximize_window": true,
 
     "headless": false,
@@ -12,5 +14,4 @@
     "auto_login": false,
 
     "mute_audio": true
-
 }

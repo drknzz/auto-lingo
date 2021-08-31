@@ -1,4 +1,4 @@
-import sys, time, json, argparse
+import sys, time, json, argparse, random
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -43,6 +43,14 @@ def get_settings():
             settings = json.load(json_f)
     except:
         print("Failed to import settings from settings.json.")
+        sys.exit()
+        
+    if settings['deviation'] > settings['antifarm_sleep'] and settings['antifarm_sleep'] != 0:
+        print("deviation cannot be larger than antifarm_sleep time")
+        sys.exit()
+        
+    if settings['deviation'] < 0:
+        print("deviation cannot be negative")
         sys.exit()
 
     return settings
@@ -621,7 +629,9 @@ def stories_bot():
             complete_story()
 
             if settings['antifarm_sleep'] > 0:
-                time.sleep(settings['antifarm_sleep'])
+                deviation = random.randint(-settings['deviation'], settings['deviation'])
+                print(deviation)
+                time.sleep(settings['antifarm_sleep'] + deviation)
 
 
 def learn_bot():
@@ -638,7 +648,7 @@ def learn_bot():
 
         for skill in skills:
             try:
-                start_skill = skill.find_element_by_xpath('//button[@data-test="start-button"]')
+                start_skill = skill.find_element_by_xpath('//a[@data-test="start-button"]')
                 start_skill.click()
                 complete_skill()
                 completed_skill = True
@@ -683,8 +693,14 @@ def learn_bot():
             skill.click()
 
             time.sleep(0.5)
-
-            start_skill = skill.find_element_by_xpath('//button[@data-test="start-button"]')
+            
+            found = True
+            try:
+                start_skill = skill.find_element_by_xpath('//a[@data-test="start-button"]')
+            except WebDriverException:
+                found = False
+            if not found:
+                start_skill = skill.find_element_by_xpath('//button[@data-test="start-button"]')
 
             action = ActionChains(driver)
             action.move_to_element(start_skill).click().perform()
@@ -694,7 +710,8 @@ def learn_bot():
             completed_skill = True
 
             if settings['antifarm_sleep'] > 0:
-                time.sleep(settings['antifarm_sleep'])
+                deviation = random.randint(-settings['deviation'], settings['deviation'])
+                time.sleep(settings['antifarm_sleep'] + deviation)
 
             break
 
