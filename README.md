@@ -72,7 +72,7 @@ Settings are located in [settings.json](https://github.com/drknzz/auto-lingo/blo
 
 * `chromedriver_path` &emsp; - Path to chromedriver executable
 * `antifarm_sleep` &emsp;&emsp;&thinsp;&thinsp; - Sleep time inbetween completing stories / skills
-* `deviation` &emsp;&emsp;&thinsp;&thinsp; - Deviation of antifarm_sleep time for harder bot detection
+* `deviation` &emsp;&emsp;&emsp;&emsp;&thinsp;&thinsp;&thinsp;&thinsp; - Deviation of antifarm_sleep time for harder bot detection
 * `maximize_window` &emsp;&emsp; - Start browser in full screen
 * `headless` &emsp;&emsp;&emsp;&emsp;&thinsp;&thinsp;&thinsp;&thinsp;&thinsp;&thinsp; - No browser gui required
 * `incognito` &emsp;&emsp;&emsp;&emsp;&thinsp;&thinsp;&thinsp;&thinsp; - Start browser in incognito mode
