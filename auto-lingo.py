@@ -419,7 +419,7 @@ def complete_story():
     )
     start_story.click()
 
-    task_list = ['//span[@data-test="stories-phrase"]', '//button[@data-test="stories-choice"]', '//div[@data-test="stories-selectable-phrase"]', '//button[@data-test="stories-token"]']
+    task_list = ['//span[@data-test="stories-phrase"]', '//button[@data-test="stories-choice"]', '//div[@data-test="stories-selectable-phrase"]', '//button[@data-test="challenge-tap-token"]', '//button[@data-test="stories-token"]',]
     done_tokens = False
 
     while True:
@@ -736,7 +736,7 @@ def main():
 
     try:
         have_account = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, '//a[@data-test="have-account"]'))
+            EC.presence_of_element_located((By.XPATH, '//button[@data-test="have-account"]'))
         )
         have_account.click()
     except WebDriverException as e:
