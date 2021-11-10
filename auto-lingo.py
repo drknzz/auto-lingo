@@ -296,7 +296,7 @@ def challenge_translate():
 
             for word in words:
                 for tap_token in tap_tokens:
-                    if tap_token.get_attribute("disabled") != None:
+                    if tap_token.get_attribute("aria-disabled") != None or tap_token.get_attribute("disabled") != None:
                         continue
                     if tap_token.text.lower() == word:
                         tap_token.click()
@@ -412,6 +412,35 @@ def challenge_gap():
         dictionary[sentence] = solution.text
         # print(sentence, '-fg->', dictionary[sentence])
 
+def challenge_match():
+    tap_tokens = driver.find_elements_by_xpath('//button[@data-test="challenge-tap-token"]')
+
+    invalid_tokens = []
+
+    for token in tap_tokens:
+        if token.get_attribute("aria-disabled") != None or token.get_attribute("disabled") != None:
+            continue
+
+        text = token.text + " (m)"
+        if text in dictionary:
+            for token2 in tap_tokens:
+                if token2.text == dictionary[text]:
+                    token.click()
+                    token2.click()
+                    invalid_tokens.append(token)
+                    invalid_tokens.append(token2)
+                    break
+        else:
+            for token2 in tap_tokens:
+                if token2 in invalid_tokens:
+                    continue
+                token.click()
+                token2.click()
+                if token2.get_attribute("aria-disabled") != None or token.get_attribute("disabled") != None:
+                    dictionary[text] = token2.text
+                    invalid_tokens.append(token)
+                    invalid_tokens.append(token2)
+                    break
 
 def complete_story():
     start_story = WebDriverWait(driver, 20).until(
@@ -586,6 +615,13 @@ def complete_skill(possible_skip_to_lesson=False):
                 pass
 
             try:
+                challenge = driver.find_element_by_xpath('//div[@data-test="challenge challenge-match"]')
+                challenge_match()
+                #break
+            except WebDriverException:
+                pass
+
+            try:
                 next = driver.find_element_by_xpath('//button[@data-test="player-next"]')
                 next.click()
                 break
@@ -663,7 +699,10 @@ def learn_bot():
 
             # search for g tag with grey circle fill
             # cannot search for skills with level < 5 because some skills cap at level 1
-            g_tag = skill.find_element_by_tag_name('g')
+            try:
+                g_tag = skill.find_element_by_tag_name('g')
+            except WebDriverException:
+                continue
 
             if 'fill="#e5e5e5"' not in g_tag.get_attribute('innerHTML'):
                 continue
