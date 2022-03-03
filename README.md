@@ -70,26 +70,31 @@ git clone https://github.com/drknzz/auto-lingo.git
 python auto-lingo.py
 ```
 
-### Additional flags:
+### Additional flags
 
-* ``-s`` or ``--stories`` &emsp; - [Stories mode](#stories-mode)
-* ``-l`` or ``--learn`` &emsp;&emsp; - [Learn mode](#learn-mode)
-* ``-i`` or ``--incognito`` &thinsp; - Start browser in incognito mode
-* ``-m`` or ``--mute`` &emsp;&emsp;&thinsp;&thinsp;&thinsp; - Start browser with muted audio
-* ``-a`` or ``--autologin`` &thinsp; - Automatically login using [credentials.json](https://github.com/drknzz/auto-lingo/blob/main/credentials.json)
+| Syntax                    | Description                                                                                                   |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| ``-s`` or ``--stories``   | [Stories mode](#stories-mode)                                                                                 |
+| ``-l`` or ``--learn``     | [Learn mode](#learn-mode)                                                                                     |
+| ``-i`` or ``--incognito`` | Start browser in incognito mode                                                                               |
+| ``-m`` or ``--mute``      | Start browser with muted audio                                                                                |
+| ``-a`` or ``--autologin`` | Automatically login using [credentials.json](https://github.com/drknzz/auto-lingo/blob/main/credentials.json) |
 
 ## Settings
 
 Settings are located in [settings.json](https://github.com/drknzz/auto-lingo/blob/main/settings.json) file.
 
-* `chromedriver_path` &emsp; - Path to chromedriver executable
-* `antifarm_sleep` &emsp;&emsp;&thinsp;&thinsp; - Sleep time inbetween completing stories / skills
-* `deviation` &emsp;&emsp;&emsp;&emsp;&thinsp;&thinsp;&thinsp;&thinsp; - Deviation of antifarm_sleep time for harder bot detection
-* `maximize_window` &emsp;&emsp; - Start browser in full screen
-* `headless` &emsp;&emsp;&emsp;&emsp;&thinsp;&thinsp;&thinsp;&thinsp;&thinsp;&thinsp; - No browser gui required
-* `incognito` &emsp;&emsp;&emsp;&emsp;&thinsp;&thinsp;&thinsp;&thinsp; - Start browser in incognito mode
-* `auto_login` &emsp;&emsp;&emsp;&emsp;&thinsp;&thinsp; - Automatically login to Duolingo using data in [credentials.json](https://github.com/drknzz/auto-lingo/blob/main/credentials.json)
-* `mute_audio` &emsp;&emsp;&emsp;&emsp;&thinsp;&thinsp; - Start browser with muted audio
+| Syntax                    | Description                                                                                                   |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `chromedriver_path`   | Path to chromedriver executable                                                                                 |
+| `antifarm_sleep`     | Sleep time inbetween completing stories / skills                                                                                    |
+|  `deviation`   |  Deviation of antifarm_sleep time for harder bot detection   |
+|  `maximize_window`   | Start browser in full screen    |
+|  `headless`   |  No browser gui required   |
+|  `incognito`   | No browser gui required    |
+|  `auto_login`   |  Automatically login to Duolingo using data in [credentials.json](https://github.com/drknzz/auto-lingo/blob/main/credentials.json)   |
+| `mute_audio` |Start browser with muted audio  |
+
 
 ## Acknowledgments
 
