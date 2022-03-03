@@ -8,11 +8,16 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.action_chains import ActionChains
 
+from selenium.webdriver.chrome.service import Service as ChromeService
 
 def set_chrome_options(chrome_options):
     chrome_options.add_argument("--log-level=3")
     chrome_options.add_argument("--disable-infobars")
     chrome_options.add_argument("--disable-extensions")
+
+
+    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    chrome_options.add_experimental_option("useAutomationExtension", False)
 
     if settings['incognito']:
         chrome_options.add_argument("--incognito")
@@ -333,7 +338,7 @@ def challenge_tap_complete():
     else:
         skip = driver.find_element_by_xpath('//button[@data-test="player-skip"]')
         skip.click()
-        time.sleep(0.2)
+        time.sleep(1)
         solution = driver.find_element_by_xpath('//div[@class="_1UqAr _1sqiF"]').text
         solution = solution.replace(" ", "")
 
@@ -769,8 +774,18 @@ def main():
     chrome_options = Options()
     set_chrome_options(chrome_options)
 
+# options = webdriver.ChromeOptions()
+# options.add_experimental_option("excludeSwitches", ["enable-automation"])
+# options.add_experimental_option("useAutomationExtension", False)
+
+
+
     global driver
-    driver = webdriver.Chrome(settings['chromedriver_path'], options=chrome_options)
+
+    service = ChromeService(executable_path=settings['chromedriver_path'])
+    
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+
     driver.get("https://duolingo.com")
 
     try:
