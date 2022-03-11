@@ -135,12 +135,12 @@ def log_in(login, password):
 
 # this function is dedicated to all imbecils who put "Correct solution:" inside the solution itself
 
-
 def anti_imbecil_check(solution):
     return len(solution) > 17 and solution[0:17] == "Correct solution:"
 
-
 def task_tokens(tokens):
+
+    # I think this is where the solving happens
     done_list = []
 
     for i in range(len(tokens)):
@@ -161,14 +161,16 @@ def task_tokens(tokens):
                 done_list.append(j)
                 break
 
-
 def task_options(options):
     for option in options:
         try:
-            option.click()
+            if(option.get_attribute('data-test')=='challenge-tap-token'):
+                challenge_match()
+                # quit()
+            else:
+                option.click()
         except WebDriverException:
             pass
-
 
 def challenge_select():
     sentence = driver.find_element(By.XPATH,
@@ -188,13 +190,11 @@ def challenge_select():
         solution = driver.find_element(By.XPATH,
                                        '//div[@class="_1UqAr _1sqiF"]').text
         dictionary[sentence] = solution
-        print(sentence, '-o->', dictionary[sentence])
-
+        # print(sentence, '-o->', dictionary[sentence])
 
 def challenge_speak_listen():
     skip = driver.find_element(By.XPATH, '//button[@data-test="player-skip"]')
     skip.click()
-
 
 def challenge_judge():
     sentence = driver.find_element(By.XPATH, '//div[@class="_3-JBe"]').text
@@ -213,8 +213,7 @@ def challenge_judge():
         solution = driver.find_element(By.XPATH,
                                        '//div[@class="_1UqAr _1sqiF"]')
         dictionary[sentence] = solution.text
-        print(sentence, '-s->', dictionary[sentence])
-
+        # print(sentence, '-s->', dictionary[sentence])
 
 def challenge_form():
     sentence = driver.find_element(By.XPATH,
@@ -234,8 +233,7 @@ def challenge_form():
         solution = driver.find_element(By.XPATH,
                                        '//div[@class="_1UqAr _1sqiF"]')
         dictionary[sentence] = solution.text
-        print(sentence, '-x->', dictionary[sentence])
-
+        # print(sentence, '-x->', dictionary[sentence])
 
 def challenge_name():
     sentence = driver.find_element(By.XPATH,
@@ -261,8 +259,7 @@ def challenge_name():
             solution = solution.split(",")[0]
 
         dictionary[sentence] = solution
-        print(sentence, '-+->', dictionary[sentence])
-
+        # print(sentence, '-+->', dictionary[sentence])
 
 def challenge_reverse_translation():
     sentence = driver.find_element(By.XPATH,
@@ -304,8 +301,7 @@ def challenge_reverse_translation():
             solution = solution[len(input_text):]
 
         dictionary[sentence] = solution
-        print(sentence, '--->', dictionary[sentence])
-
+        # print(sentence, '--->', dictionary[sentence])
 
 def challenge_translate():
     # static variable for choosing method of splitting tap tokens with apostrophe sign
@@ -362,10 +358,10 @@ def challenge_translate():
                                        '//div[@class="_1UqAr _1sqiF"]').text
         solution = solution.replace(";", "").replace("¿", "").replace("¡", "")
         dictionary[sentence] = solution
-        print(sentence, '--->', dictionary[sentence])
-
+        # print(sentence, '--->', dictionary[sentence])
 
 def challenge_tap_complete():
+    # print("---> challenge_tap_complete")
     sentence_words = driver.find_elements(By.XPATH,
                                           '//span[@data-test="hint-sentence"]')
     sentence = ""
@@ -382,9 +378,10 @@ def challenge_tap_complete():
                 tap_token.click()
                 break
 
-    else:
+    else: # this is when it can not quickly solve it.
         skip = driver.find_element(By.XPATH,
                                    '//button[@data-test="player-skip"]')
+        # print(skip.text)
         skip.click()
         time.sleep(1)
         solution = driver.find_element(By.XPATH,
@@ -409,10 +406,10 @@ def challenge_tap_complete():
             solution = solution[len(input_text):]
 
         dictionary[sentence] = solution
-        print(sentence, '-q->', dictionary[sentence])
-
+        # print(sentence, '-q->', dictionary[sentence])
 
 def challenge_tap():
+    # print("---> challenge_tap")
     sentence = driver.find_element(By.XPATH,
                                    '//div[@class="_3NgMa _2Hg6H"]').text
     sentence += " (ta)"
@@ -427,14 +424,14 @@ def challenge_tap():
     else:
         skip = driver.find_element(By.XPATH,
                                    '//button[@data-test="player-skip"]')
+        print(skip.text)
         skip.click()
         solution = driver.find_element(By.XPATH,
                                        '//div[@class="_1UqAr _1sqiF"]').text
         solution = solution.replace(".", "").replace("?", "").replace(
             "!", "").replace(";", "").replace(",", "").replace("¿", "")
         dictionary[sentence] = solution
-        print(sentence, '-ta->', dictionary[sentence])
-
+        # print(sentence, '-ta->', dictionary[sentence])
 
 def challenge_dialogue_readcomp(isDial):
     if isDial:
@@ -460,7 +457,6 @@ def challenge_dialogue_readcomp(isDial):
         dictionary[sentence] = solution.text
         print(sentence, '-d->', dictionary[sentence])
 
-
 def challenge_gap():
     sentence = driver.find_element(By.XPATH,
                                    '//div[@class="_3Fi4A _2Hg6H"]').text
@@ -480,38 +476,31 @@ def challenge_gap():
         dictionary[sentence] = solution.text
         print(sentence, '-fg->', dictionary[sentence])
 
-
 def challenge_match():
+
+    # @TODO: solve the problem with two sets of challenge-tap-token questions
+    # @TODO: Solve the issue where one is not clicked
     tap_tokens = driver.find_elements(By.XPATH,
                                       '//button[@data-test="challenge-tap-token"]')
-
-    invalid_tokens = []
 
     for token in tap_tokens:
         if token.get_attribute("aria-disabled") != None or token.get_attribute("disabled") != None:
             continue
 
-        text = token.text + " (m)"
-        if text in dictionary:
-            for token2 in tap_tokens:
-                if token2.text == dictionary[text]:
-                    token.click()
-                    token2.click()
-                    invalid_tokens.append(token)
-                    invalid_tokens.append(token2)
-                    break
-        else:
-            for token2 in tap_tokens:
-                if token2 in invalid_tokens:
-                    continue
-                token.click()
-                token2.click()
-                if token2.get_attribute("aria-disabled") != None or token.get_attribute("disabled") != None:
-                    dictionary[text] = token2.text
-                    invalid_tokens.append(token)
-                    invalid_tokens.append(token2)
-                    break
+        invalid_tokens = []
+        # print(f"One: {token.text}")
 
+        for token2 in tap_tokens:
+            token.click()
+            time.sleep(.5) # Click slower
+            if token2 in invalid_tokens or token2.get_attribute("aria-disabled") != None or token.get_attribute("disabled") != None:
+                # This one has been tried, move on to the next instance of the loop
+                continue
+            else:
+                invalid_tokens.append(token2)
+                # print(f"Two: {token2.text}")
+                time.sleep(.5) # Click slower
+                token2.click()
 
 def complete_story():
     start_story = WebDriverWait(driver, 20).until(
@@ -558,7 +547,7 @@ def complete_story():
                 # if did not find that task
                 if len(options) == 0:
                     continue
-
+                
                 if task == task_list[-1]:
                     task_tokens(options)
                     done_tokens = True
@@ -570,7 +559,6 @@ def complete_story():
     # close story tab and switch to main tab
     driver.close()
     driver.switch_to.window(driver.window_handles[0])
-
 
 def complete_skill(possible_skip_to_lesson=False):
     if possible_skip_to_lesson:
@@ -739,8 +727,10 @@ def complete_skill(possible_skip_to_lesson=False):
 
         time.sleep(1)
 
-
 def stories_bot():
+
+    print("STORIES BOT")
+
     while True:
         driver.get("https://www.duolingo.com/stories?referrer=web_tab")
         stories = WebDriverWait(driver, 20).until(
@@ -753,6 +743,7 @@ def stories_bot():
 
         for story in stories:
             if "+0 XP" in story.text:
+                print(f"skipping {story.text}")
                 continue
 
             driver.execute_script("arguments[0].scrollIntoView();", story)
@@ -770,13 +761,10 @@ def stories_bot():
             if settings['antifarm_sleep'] > 0:
                 deviation = random.randint(-settings['deviation'],
                                            settings['deviation'])
-                print(deviation)
+                # print(deviation)
                 time.sleep(settings['antifarm_sleep'] + deviation)
 
-
 def learn_bot():
-    global dictionary
-    dictionary = {}
 
     while True:
         driver.get("https://www.duolingo.com/learn")
@@ -868,8 +856,13 @@ def learn_bot():
         if not completed_skill:
             break
 
-
 def main():
+
+    print("LETS START!")
+
+    global dictionary
+    dictionary = {}
+
     global settings
     settings = get_settings()
 
@@ -906,7 +899,6 @@ def main():
         stories_bot()
 
     exit("Auto-lingo finished.")
-
 
 if __name__ == "__main__":
     main()
