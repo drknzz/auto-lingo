@@ -1,8 +1,5 @@
-import sys
-import time
-import json
-import argparse
-import random
+import sys,os,time,json,argparse,random
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -48,8 +45,13 @@ def exit(message=""):
 
 def get_settings():
     settings = {}
+
+
+
+
     try:
-        with open('settings.json') as json_f:
+        path = os.path.dirname(__file__)
+        with open(os.path.join(path, 'settings.json')) as json_f:
             settings = json.load(json_f)
     except:
         print("Failed to import settings from settings.json.")
@@ -67,8 +69,11 @@ def get_settings():
 
 
 def get_credentials():
+
+
     try:
-        with open('credentials.json') as json_file:
+        path = os.path.dirname(__file__)
+        with open(os.path.join(path, 'credentials.json')) as json_file:
             creds = json.load(json_file)
 
         login = creds['login']
@@ -130,6 +135,9 @@ def log_in(login, password):
         wait = WebDriverWait(driver, 25)
         wait.until(lambda driver: driver.current_url ==
                    "https://www.duolingo.com/learn")
+
+        print('Loggin in')
+
     except WebDriverException:
         exit("Timed out. Please login to Duolingo in time.")
 
@@ -166,7 +174,6 @@ def task_options(options):
         try:
             if(option.get_attribute('data-test')=='challenge-tap-token'):
                 challenge_match()
-                # quit()
             else:
                 option.click()
         except WebDriverException:
@@ -478,8 +485,6 @@ def challenge_gap():
 
 def challenge_match():
 
-    # @TODO: solve the problem with two sets of challenge-tap-token questions
-    # @TODO: Solve the issue where one is not clicked
     tap_tokens = driver.find_elements(By.XPATH,
                                       '//button[@data-test="challenge-tap-token"]')
 
@@ -488,7 +493,6 @@ def challenge_match():
             continue
 
         invalid_tokens = []
-        # print(f"One: {token.text}")
 
         for token2 in tap_tokens:
             token.click()
@@ -729,7 +733,7 @@ def complete_skill(possible_skip_to_lesson=False):
 
 def stories_bot():
 
-    print("STORIES BOT")
+    print("📙 STORIES BOT")
 
     while True:
         driver.get("https://www.duolingo.com/stories?referrer=web_tab")
@@ -742,10 +746,13 @@ def stories_bot():
             break
 
         for story in stories:
+            story_display = story.text.splitlines()
             if "+0 XP" in story.text:
-                print(f"skipping {story.text}")
+                print(f"📖 Skipping {story_display[0]}")
                 continue
 
+            
+            print(f"📙 Starting {story_display[0]}")
             driver.execute_script("arguments[0].scrollIntoView();", story)
             story.click()
 
@@ -757,12 +764,12 @@ def stories_bot():
             driver.switch_to.window(driver.window_handles[1])
 
             complete_story()
-
             if settings['antifarm_sleep'] > 0:
                 deviation = random.randint(-settings['deviation'],
                                            settings['deviation'])
-                # print(deviation)
                 time.sleep(settings['antifarm_sleep'] + deviation)
+
+            print(f"📙 Finishing {story_display[0]}")
 
 def learn_bot():
 
@@ -858,7 +865,7 @@ def learn_bot():
 
 def main():
 
-    print("LETS START!")
+    print("🏁 Starting out")
 
     global dictionary
     dictionary = {}
