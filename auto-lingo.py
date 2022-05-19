@@ -800,8 +800,8 @@ def learn_bot():
 
             # search for g tag with grey circle fill
             # cannot search for skills with level < 5 because some skills cap at level 1
-            try:
-                g_tag = skill.find_element_by_tag_name('g')
+            try:                
+                g_tag = skill.find_element(by=By.TAG_NAME, value='g')
             except WebDriverException:
                 continue
 
