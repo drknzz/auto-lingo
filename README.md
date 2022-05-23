@@ -65,7 +65,10 @@ git clone https://github.com/drknzz/auto-lingo.git
 
 <!-- USAGE EXAMPLES -->
 ## Usage
-
+```sh
+bash trigger.sh -n <number_of_windows>
+```
+### OR
 ```sh
 python auto-lingo.py
 ```
