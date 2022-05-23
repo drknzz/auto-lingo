@@ -1,4 +1,9 @@
-import sys,os,time,json,argparse,random
+import sys
+from time import sleep
+from os.path import dirname, join
+from json import load
+from random import randint
+from argparse import ArgumentParser
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -45,14 +50,10 @@ def exit(message=""):
 
 def get_settings():
     settings = {}
-
-
-
-
     try:
-        path = os.path.dirname(__file__)
-        with open(os.path.join(path, 'settings.json')) as json_f:
-            settings = json.load(json_f)
+        path = dirname(__file__)
+        with open(join(path, 'settings.json')) as json_f:
+            settings = load(json_f)
     except:
         print("Failed to import settings from settings.json.")
         sys.exit()
@@ -69,12 +70,11 @@ def get_settings():
 
 
 def get_credentials():
-
-
     try:
-        path = os.path.dirname(__file__)
-        with open(os.path.join(path, 'credentials.json')) as json_file:
-            creds = json.load(json_file)
+        path = dirname(__file__)
+        path = join(path, 'credential.json')
+        with open(path) as json_file:
+            creds = load(json_file)
 
         login = creds['login']
         password = creds['password']
@@ -85,7 +85,7 @@ def get_credentials():
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser()
+    parser = ArgumentParser()
     parser.add_argument("-s", "--stories",
                         help="stories mode", action="store_true")
     parser.add_argument("-l", "--learn", help="learn mode",
@@ -256,7 +256,7 @@ def challenge_name():
         skip = driver.find_element(By.XPATH,
                                    '//button[@data-test="player-skip"]')
         skip.click()
-        time.sleep(0.2)
+        sleep(0.2)
         solution = driver.find_element(By.XPATH,
                                        '//div[@class="_1UqAr _1sqiF"]').text
 
@@ -282,7 +282,7 @@ def challenge_reverse_translation():
         skip = driver.find_element(By.XPATH,
                                    '//button[@data-test="player-skip"]')
         skip.click()
-        time.sleep(0.2)
+        sleep(0.2)
         solution = driver.find_element(By.XPATH,
                                        '//div[@class="_1UqAr _1sqiF"]').text
 
@@ -390,7 +390,7 @@ def challenge_tap_complete():
                                    '//button[@data-test="player-skip"]')
         # print(skip.text)
         skip.click()
-        time.sleep(1)
+        sleep(1)
         solution = driver.find_element(By.XPATH,
                                        '//div[@class="_1UqAr _1sqiF"]').text
         solution = solution.replace(" ", "")
@@ -496,14 +496,14 @@ def challenge_match():
 
         for token2 in tap_tokens:
             token.click()
-            time.sleep(.5) # Click slower
+            sleep(.5) # Click slower
             if token2 in invalid_tokens or token2.get_attribute("aria-disabled") != None or token.get_attribute("disabled") != None:
                 # This one has been tried, move on to the next instance of the loop
                 continue
             else:
                 invalid_tokens.append(token2)
                 # print(f"Two: {token2.text}")
-                time.sleep(.5) # Click slower
+                sleep(.5) # Click slower
                 token2.click()
 
 def complete_story():
@@ -566,7 +566,7 @@ def complete_story():
 
 def complete_skill(possible_skip_to_lesson=False):
     if possible_skip_to_lesson:
-        time.sleep(2)
+        sleep(2)
         try:
             skip_to_lesson = driver.find_element(By.XPATH,
                                                  '//button[@class="_3o5OF _2q8ZQ t5wFJ yTpGk _2RTMn _3yAjN"]')
@@ -729,7 +729,7 @@ def complete_skill(possible_skip_to_lesson=False):
             except WebDriverException:
                 pass
 
-        time.sleep(1)
+        sleep(1)
 
 def stories_bot():
 
@@ -744,7 +744,8 @@ def stories_bot():
 
         if len(stories) == 0:
             break
-
+        # for start from highest score
+        stories = list(reversed(stories))
         for story in stories:
             story_display = story.text.splitlines()
             if "+0 XP" in story.text:
@@ -765,9 +766,9 @@ def stories_bot():
 
             complete_story()
             if settings['antifarm_sleep'] > 0:
-                deviation = random.randint(-settings['deviation'],
+                deviation = randint(-settings['deviation'],
                                            settings['deviation'])
-                time.sleep(settings['antifarm_sleep'] + deviation)
+                sleep(settings['antifarm_sleep'] + deviation)
 
             print(f"📙 Finishing {story_display[0]}")
 
@@ -791,7 +792,7 @@ def learn_bot():
                 completed_skill = True
 
                 if settings['antifarm_sleep'] > 0:
-                    time.sleep(settings['antifarm_sleep'])
+                    sleep(settings['antifarm_sleep'])
 
                 break
 
@@ -800,7 +801,7 @@ def learn_bot():
 
             # search for g tag with grey circle fill
             # cannot search for skills with level < 5 because some skills cap at level 1
-            try:                
+            try:
                 g_tag = skill.find_element(by=By.TAG_NAME, value='g')
             except WebDriverException:
                 continue
@@ -824,17 +825,17 @@ def learn_bot():
             action = ActionChains(driver)
             action.move_to_element(blank_item).click().perform()
 
-            time.sleep(0.5)
+            sleep(0.5)
 
             # navigate to chosen skill
             action = ActionChains(driver)
             action.move_to_element(skill).perform()
 
-            time.sleep(0.5)
+            sleep(0.5)
 
             skill.click()
 
-            time.sleep(0.5)
+            sleep(0.5)
 
             found = True
             try:
@@ -854,9 +855,9 @@ def learn_bot():
             completed_skill = True
 
             if settings['antifarm_sleep'] > 0:
-                deviation = random.randint(-settings['deviation'],
+                deviation = randint(-settings['deviation'],
                                            settings['deviation'])
-                time.sleep(settings['antifarm_sleep'] + deviation)
+                sleep(settings['antifarm_sleep'] + deviation)
 
             break
 
@@ -876,6 +877,7 @@ def main():
     login, password = get_credentials()
 
     args = parse_arguments()
+    print(args.path)
 
     chrome_options = Options()
     set_chrome_options(chrome_options)
