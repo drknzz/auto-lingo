@@ -65,12 +65,19 @@ git clone https://github.com/drknzz/auto-lingo.git
 
 <!-- USAGE EXAMPLES -->
 ## Usage
-```sh
-bash trigger.sh -n <number_of_windows>
-```
-### OR
+
 ```sh
 python auto-lingo.py
+```
+
+To earn a lot of points in a short time you may want to run below command. Set the environment first, then activate
+```sh
+$ chmod +x run.sh
+$ source venv/bin/activate
+```
+Run script
+```sh
+$ ./run.sh number 5
 ```
 
 ### Additional flags

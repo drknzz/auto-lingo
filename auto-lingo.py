@@ -72,8 +72,7 @@ def get_settings():
 def get_credentials():
     try:
         path = dirname(__file__)
-        path = join(path, 'credential.json')
-        with open(path) as json_file:
+        with open(join(path, 'credentials.json')) as json_file:
             creds = load(json_file)
 
         login = creds['login']
@@ -96,6 +95,8 @@ def parse_arguments():
         "-m", "--mute", help="mute browser audio", action="store_true")
     parser.add_argument(
         "-a", "--autologin", help="login to duolingo automatically", action="store_true")
+    parser.add_argument(
+        "-n", "--number", help="Number of story which will start")
 
     args = parser.parse_args()
 
@@ -731,7 +732,7 @@ def complete_skill(possible_skip_to_lesson=False):
 
         sleep(1)
 
-def stories_bot():
+def stories_bot(number:int):
 
     print("📙 STORIES BOT")
 
@@ -745,10 +746,10 @@ def stories_bot():
         if len(stories) == 0:
             break
         # for start from highest score
-        stories = list(reversed(stories))
+        stories = list(reversed(stories))[number:]
         for story in stories:
             story_display = story.text.splitlines()
-            if "+0 XP" in story.text:
+            if "+2 XP" in story.text or "+0 XP" in story.text:
                 print(f"📖 Skipping {story_display[0]}")
                 continue
 
@@ -802,7 +803,7 @@ def learn_bot():
             # search for g tag with grey circle fill
             # cannot search for skills with level < 5 because some skills cap at level 1
             try:
-                g_tag = skill.find_element(by=By.TAG_NAME, value='g')
+                g_tag = skill.find_element_by_tag_name('g')
             except WebDriverException:
                 continue
 
@@ -874,10 +875,9 @@ def main():
     global settings
     settings = get_settings()
 
-    login, password = get_credentials()
+    login, password = get_credentials()  
 
-    args = parse_arguments()
-    print(args.path)
+    args = parse_arguments()  
 
     chrome_options = Options()
     set_chrome_options(chrome_options)
@@ -905,7 +905,7 @@ def main():
         learn_bot()
 
     if args.stories:
-        stories_bot()
+        stories_bot(int(args.number))
 
     exit("Auto-lingo finished.")
 
